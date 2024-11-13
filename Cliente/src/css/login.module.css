@@ -1,0 +1,78 @@
+.loginContainer {
+    background-image: url('../Imagenes/fONDITO.png'); /* Cambia esto a la ruta de tu imagen */
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh; /* Asegura que el contenedor ocupe toda la altura de la ventana */
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 2em;
+    background-color: #171717;
+    border-radius: 25px;
+    transition: .4s ease-in-out;
+    width: 400px;
+    margin: auto;
+}
+
+.form:hover {
+    transform: scale(1.05);
+    border: 1px solid black;
+}
+
+/* Nuevo estilo para la imagen del logo */
+.logo {
+    display: block;
+    margin: 0 auto 20px auto; /* Centra la imagen y agrega espacio inferior */
+    width: 100px; /* Ajusta el tamaño del logo */
+}
+
+.heading {
+    text-align: center;
+    margin: 1em 0;
+    color: rgb(255, 255, 255);
+    font-size: 2em;
+}
+
+.field {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    border-radius: 25px;
+    padding: 0.6em;
+    border: none;
+    color: white;
+    background-color: #171717;
+    box-shadow: inset 2px 5px 10px rgb(5, 5, 5);
+}
+
+.inputicon {
+    height: 1.3em;
+    width: 1.3em;
+    fill: white;
+}
+
+.inputfield {
+    background: none;
+    border: none;
+    width: 100%;
+    color: #d3d3d3;
+}
+
+.button2 {
+    padding: 0.5em;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+    transition: .4s ease-in-out;
+    background-color: #252525;
+    color: white;
+}
+
+
+.button2 {
+    background-color: black;
+    color: white;
+}

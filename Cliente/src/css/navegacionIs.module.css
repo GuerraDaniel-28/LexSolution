@@ -1,0 +1,10 @@
+body {
+  background-color: #6a7d93;
+}
+.bgimage {
+    background-image: url('../Imagenes/fONDITO.png'    ); 
+    background-size: cover;
+    background-position: center;
+    height: 100vh; 
+  }
+  
