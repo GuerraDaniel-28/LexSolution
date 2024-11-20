@@ -10,6 +10,7 @@ export const Dashboard = (onLogout ) => {
   // Definir rutas en las que queremos ocultar el mensaje de bienvenida
   const hideWelcomeMessageRoutes = [
     '/clientes',
+    '/clientes/:id',
     '/agclientes',
     '/detclientes',
     '/casos',

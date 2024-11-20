@@ -61,14 +61,39 @@ export const AgregarCliente = () => {
                         required
                     />
                 </div>
+            
                 <div className="mb-3">
-                    <label htmlFor="informacionContacto" className="form-label">Información de Contacto</label>
+                    <label htmlFor="telefono" className="form-label">Telefono</label>
                     <input
                         type="text"
-                        name="Informacion_Contacto"
-                        id="informacionContacto"
+                        name="Telefono"
+                        id="telefono"
                         className="form-control"
-                        placeholder="Información de Contacto"
+                        placeholder="Telefono"
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="email" className="form-label">Correo Electronico</label>
+                    <input
+                        type="text"
+                        name="Email"
+                        id="email"
+                        className="form-control"
+                        placeholder="Email"
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="notas" className="form-label">Notas</label>
+                    <input
+                        type="text"
+                        name="Notas"
+                        id="notas"
+                        className="form-control"
+                        placeholder="Notas"
                         onChange={handleChange}
                         required
                     />

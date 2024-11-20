@@ -111,7 +111,7 @@ app.post('/login', (req, res) => {
 });
 // Ruta para obtener todos los clientes de un usuario
 app.get('/clientes', authenticateToken, (req, res) => {
-    const query = 'SELECT * FROM Clientes WHERE Usuario_ID = ?';
+    const query = 'SELECT ID_Cliente, Nombre_Cliente, Direccion, Telefono, Email, Notas FROM Clientes WHERE Usuario_ID = ?';
     db.query(query, [req.user.id], (err, results) => {
         if (err) return res.status(500).json({ error: 'Error en el servidor' });
         res.json(results);
@@ -120,9 +120,9 @@ app.get('/clientes', authenticateToken, (req, res) => {
 
 // Ruta para añadir un cliente
 app.post('/clientes', authenticateToken, (req, res) => {
-    const { Nombre_Cliente, Direccion, Informacion_Contacto } = req.body;
-    const query = 'INSERT INTO Clientes (Nombre_Cliente, Direccion, Informacion_Contacto, Usuario_ID) VALUES (?, ?, ?, ?)';
-    db.query(query, [Nombre_Cliente, Direccion, Informacion_Contacto, req.user.id], (err, result) => {
+    const { Nombre_Cliente, Direccion, Telefono, Email, Notas } = req.body;
+    const query = 'INSERT INTO Clientes (Nombre_Cliente, Direccion, Telefono, Email, Notas, Usuario_ID) VALUES (?, ?, ?, ?, ?, ?)';
+    db.query(query, [Nombre_Cliente, Direccion, Telefono, Email, Notas, req.user.id], (err, result) => {
         if (err) return res.status(500).json({ error: 'Error al añadir cliente' });
         res.status(201).json({ message: 'Cliente añadido exitosamente', clienteId: result.insertId });
     });
@@ -130,7 +130,7 @@ app.post('/clientes', authenticateToken, (req, res) => {
 
 // Ruta para obtener detalles de un cliente
 app.get('/clientes/:id', authenticateToken, (req, res) => {
-    const query = 'SELECT * FROM Clientes WHERE ID_Cliente = ? AND Usuario_ID = ?';
+    const query = 'SELECT ID_Cliente, Nombre_Cliente, Direccion, Telefono, Email, Notas FROM Clientes WHERE ID_Cliente = ? AND Usuario_ID = ?';
     db.query(query, [req.params.id, req.user.id], (err, result) => {
         if (err) return res.status(500).json({ error: 'Error en el servidor' });
         if (result.length === 0) return res.status(404).json({ error: 'Cliente no encontrado' });
@@ -141,7 +141,7 @@ app.get('/clientes/:id', authenticateToken, (req, res) => {
 // Ruta para obtener todos los casos de un usuario
 app.get('/casos', authenticateToken, (req, res) => {
     const query = `
-        SELECT Casos.ID_Caso, Casos.Estado, Casos.Fecha_Creacion, Casos.Resumen_Caso, Clientes.Nombre_Cliente
+        SELECT Casos.ID_Caso, Casos.Folio, Casos.Tipo_Caso, Casos.Estado, Casos.Fecha_Creacion, Casos.Resumen_Caso, Clientes.Nombre_Cliente
         FROM Casos
         JOIN Clientes ON Casos.Cliente_ID = Clientes.ID_Cliente
         WHERE Clientes.Usuario_ID = ?;
@@ -154,9 +154,9 @@ app.get('/casos', authenticateToken, (req, res) => {
 
 // Ruta para añadir un nuevo caso
 app.post('/casos', authenticateToken, (req, res) => {
-    const { Estado, Fecha_Creacion, Resumen_Caso, Cliente_ID } = req.body;
-    const query = 'INSERT INTO Casos (Estado, Fecha_Creacion, Resumen_Caso, Cliente_ID) VALUES (?, ?, ?, ?)';
-    db.query(query, [Estado, Fecha_Creacion, Resumen_Caso, Cliente_ID], (err, result) => {
+    const { Folio, Tipo_Caso, Estado, Fecha_Creacion, Resumen_Caso, Cliente_ID } = req.body;
+    const query = 'INSERT INTO Casos (Folio, Tipo_Caso, Estado, Fecha_Creacion, Resumen_Caso, Cliente_ID) VALUES (?, ?, ?, ?, ?, ?)';
+    db.query(query, [Folio, Tipo_Caso, Estado, Fecha_Creacion, Resumen_Caso, Cliente_ID], (err, result) => {
         if (err) return res.status(500).json({ error: 'Error al añadir caso' });
         res.status(201).json({ message: 'Caso añadido exitosamente', casoId: result.insertId });
     });
@@ -165,7 +165,7 @@ app.post('/casos', authenticateToken, (req, res) => {
 // Ruta para obtener los detalles de un caso específico
 app.get('/casos/:id', authenticateToken, (req, res) => {
     const query = `
-        SELECT Casos.ID_Caso, Casos.Estado, Casos.Fecha_Creacion, Casos.Resumen_Caso, Clientes.Nombre_Cliente
+        SELECT Casos.ID_Caso, Casos.Folio, Casos.Tipo_Caso, Casos.Estado, Casos.Fecha_Creacion, Casos.Resumen_Caso, Clientes.Nombre_Cliente
         FROM Casos
         JOIN Clientes ON Casos.Cliente_ID = Clientes.ID_Cliente
         WHERE Casos.ID_Caso = ? AND Clientes.Usuario_ID = ?;
@@ -176,6 +176,7 @@ app.get('/casos/:id', authenticateToken, (req, res) => {
         res.json(result[0]);
     });
 });
+
 
   
   
