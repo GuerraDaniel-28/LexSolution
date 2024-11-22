@@ -30,7 +30,10 @@ export const DetallesCliente = () => {
                         <h2 className="card-title">{cliente.Nombre_Cliente}</h2>
                         <hr />
                         <p className="card-text"><strong>Dirección:</strong> {cliente.Direccion}</p>
-                        <p className="card-text"><strong>Contacto:</strong> {cliente.Informacion_Contacto}</p>
+                        <p className="card-text"><strong>Telefono:</strong> {cliente.Telefono}</p>
+                        <p className="card-text"><strong>Correo Electronico:</strong> {cliente.Email}</p>
+                        <p className="card-text"><strong>Notas:</strong> {cliente.Notas}</p>
+
                     </div>
                 </div>
             ) : (

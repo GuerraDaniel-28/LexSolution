@@ -7,18 +7,6 @@ import { Bienvenida } from './Bienvenida.jsx';
 export const Dashboard = (onLogout ) => {
   const location = useLocation();
 
-  // Definir rutas en las que queremos ocultar el mensaje de bienvenida
-  const hideWelcomeMessageRoutes = [
-    '/clientes',
-    '/clientes/:id',
-    '/agclientes',
-    '/detclientes',
-    '/casos',
-    '/casos/nuevo',
-    '/perfil',
-    '/editarp',
-  ];
-  const shouldShowWelcomeMessage = !hideWelcomeMessageRoutes.includes(location.pathname);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -35,7 +23,7 @@ export const Dashboard = (onLogout ) => {
   
     return (
       <div className="container" style={{ marginTop: '80px' }}>
-        {shouldShowWelcomeMessage && <Bienvenida/>}
+     
     <nav className="navbar bg-body-primary fixed-top">
       <div className="container-fluid">
         <Link className="navbar-brand" to="/dashboard" >Dashboard</Link>

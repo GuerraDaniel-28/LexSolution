@@ -15,6 +15,7 @@ import { ListaCasos} from './components/Casos/ListaCasos.jsx';
 import { AñadirCaso } from './components/Casos/AñadirCaso.jsx';
 import { DetallesCaso } from './components/Casos/DetallesCaso.jsx';
 import {EditarPerfil} from './components/editarperfil.jsx';
+import { Bienvenida } from './components/Bienvenida.jsx';
 export const Mrutas = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));
 
@@ -57,12 +58,20 @@ export const Mrutas = () => {
         </>
       } />
 
-      {/* Ruta protegida de dashboard */}
-      <Route path="/dashboard" element={
-      
-        isAuthenticated ? <Dashboard onLogout={handleLogout} /> : <Navigate to="/login" />
-        
-      } />
+<Route 
+  path="/dashboard" 
+  element={
+    isAuthenticated ? (
+      <>
+        <Dashboard onLogout={handleLogout} />
+        <Bienvenida />
+      </>
+    ) : (
+      <Navigate to="/login" />
+    )
+  } 
+/>
+
 
 
             <Route path="/perfil" element={
@@ -126,7 +135,7 @@ export const Mrutas = () => {
               <EditarPerfil />
               </>
               } />
-
+          
             
 
     </Routes>

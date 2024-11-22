@@ -70,6 +70,42 @@ export const AñadirCaso = () => {
                     </select>
                 </div>
                 <div className="mb-3">
+                    <label htmlFor="nombre" className="form-label">Nombre del caso:</label>
+                    <input
+                        type="text"
+                        name="Nombre"
+                        className="form-control"
+                        placeholder="añade un nombre del caso"
+                        onChange={handleChange}
+                        required
+                        id="nombre"
+                    />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="folio" className="form-label">Folio</label>
+                    <input
+                        type="text"
+                        name="Folio"
+                        className="form-control"
+                        placeholder="añade un folio"
+                        onChange={handleChange}
+                        required
+                        id="folio"
+                    />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="tipo" className="form-label">Tipo de Caso</label>
+                    <select
+                        name="Tipo_Caso"
+                        className="form-select"
+                        onChange={handleChange}
+                        id="tipo"
+                    >
+                        <option value="familiar">Familiar</option>
+                        <option value="empresarial">Empresarial</option>
+                    </select>
+                </div>
+                <div className="mb-3">
                     <label htmlFor="estado" className="form-label">Estado</label>
                     <select
                         name="Estado"
@@ -82,6 +118,7 @@ export const AñadirCaso = () => {
                         <option value="incompleto">Incompleto</option>
                     </select>
                 </div>
+                
                 <div className="mb-3">
                     <label htmlFor="fechaCreacion" className="form-label">Fecha de Creación</label>
                     <input

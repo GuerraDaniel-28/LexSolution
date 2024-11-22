@@ -26,6 +26,7 @@ CREATE TABLE Clientes (
 -- Tabla Casos
 CREATE TABLE Casos (
     ID_Caso INT AUTO_INCREMENT PRIMARY KEY,
+    Nombre varchar(45),
     Folio VARCHAR(45),
     Tipo_Caso VARCHAR(45),
     Estado VARCHAR(45),
@@ -42,9 +43,12 @@ CREATE TABLE Documentos (
     Tipo_Documento VARCHAR(45),
     Fecha_Creacion DATE,
     Estado_Documento VARCHAR(45),
+    Archivo LONGBLOB, -- Campo para almacenar el contenido del archivo
+    Nombre_Archivo VARCHAR(255), -- Campo para almacenar el nombre del archivo
     Caso_ID INT,
     FOREIGN KEY (Caso_ID) REFERENCES Casos(ID_Caso)
 );
+
 
 -- Tabla Finanzas
 CREATE TABLE Finanzas (
@@ -94,3 +98,5 @@ CREATE TABLE Calendario (
 -- Consultas de prueba
 SELECT * FROM Usuarios;
 SELECT * FROM Clientes;
+select * from casos;
+select * from Documentos;

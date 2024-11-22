@@ -4,19 +4,33 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 export const Perfil = () => {
   const [userData, setUserData] = useState({});
-  const navigate = useNavigate();  // Hook para redireccionar
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Recupera los datos del usuario desde el localStorage
     const token = localStorage.getItem('authToken');
     if (token) {
-      const user = JSON.parse(atob(token.split('.')[1])); // Decodifica el token JWT para obtener los datos del usuario
-      setUserData(user);
+      try {
+        const decodedToken = JSON.parse(atob(token.split('.')[1])); // Decodifica el payload del token
+        setUserData({
+          NombreUsuario: decodedToken.NombreUsuario,
+          Contacto: decodedToken.Contacto,
+          Correo: decodedToken.Correo,
+        });
+
+        // Almacenar el ID del usuario si aún no está en localStorage
+        if (!localStorage.getItem('id')) {
+          localStorage.setItem('id', decodedToken.id);
+        }
+      } catch (error) {
+        console.error('Error al decodificar el token:', error);
+      }
+    } else {
+      console.error('Token no encontrado en localStorage');
     }
   }, []);
 
   const handleEditProfile = () => {
-    navigate('/editarp');  
+    navigate('/editarp'); // Redirigir a la página de edición de perfil
   };
 
   return (
@@ -25,12 +39,11 @@ export const Perfil = () => {
         <div className="card-body">
           <h5 className="card-title">Información del Usuario</h5>
           <hr />
-          <p className="card-text"><strong>Nombre de Usuario:</strong> {userData.NombreUsuario}</p>
-          <p className="card-text"><strong>Numero de contacto:</strong> {userData.Contacto}</p>
-          <p className="card-text"><strong>Email:</strong> {userData.Correo}</p>
-         
+          <p className="card-text"><strong>Nombre de Usuario:</strong> {userData.NombreUsuario || 'No disponible'}</p>
+          <p className="card-text"><strong>Número de contacto:</strong> {userData.Contacto || 'No disponible'}</p>
+          <p className="card-text"><strong>Email:</strong> {userData.Correo || 'No disponible'}</p>
           <hr />
-          //<button className="btn btn-secondary" onClick={handleEditProfile}>Editar Perfil</button>
+          <button className="btn btn-secondary" onClick={handleEditProfile}>Editar Perfil</button>
         </div>
       </div>
     </div>

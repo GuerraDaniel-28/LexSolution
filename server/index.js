@@ -1,7 +1,11 @@
+
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const path = require('path');
+
 
 const app = express();
 const port = 3000;
@@ -10,7 +14,7 @@ const JWT_SECRET = 'tu_clave_secreta';
 
 // Habilitar CORS
 app.use(cors({
-    origin: 'http://localhost:5173'  // Reemplaza con el origen de tu frontend
+    origin: 'http://localhost:5173'  
 }));
 
 app.use(express.json());
@@ -39,7 +43,7 @@ const authenticateToken = (req, res, next) => {
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) return res.status(403).json({ error: 'Token no válido' });
-        req.user = user; // almacena el ID de usuario en `req.user`
+        req.user = user; 
         next();
     });
 };
@@ -65,19 +69,29 @@ app.post('/register', (req, res) => {
 // Ruta para actualizar el perfil de usuario
 app.put('/edit-profile/:userId', (req, res) => {
     const { userId } = req.params;
-    const { Nombre_Usuario, Correo, Contacto, Contrasena } = req.body;
+    const { NombreUsuario, Correo, Contacto, Contrasena } = req.body;
+
+    if (!NombreUsuario || !Correo || !Contacto || !Contrasena) {
+        return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+    }
 
     const query = 'UPDATE Usuarios SET Nombre_Usuario = ?, Correo = ?, Contacto = ?, Contrasena = ? WHERE ID_Usuario = ?';
-    const values = [Nombre_Usuario, Correo, Contacto, Contrasena, userId];
+    const values = [NombreUsuario, Correo, Contacto, Contrasena, userId];
 
     db.query(query, values, (err, result) => {
         if (err) {
             console.error('Error al actualizar el perfil:', err);
-            return res.status(500).json({ error: 'Error al actualizar el perfil del usuario' });
+            return res.status(500).json({ error: 'Error interno al actualizar el perfil del usuario' });
         }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
         res.status(200).json({ message: 'Perfil actualizado exitosamente' });
     });
 });
+
 
 // Ruta de inicio de sesión
 app.post('/login', (req, res) => {
@@ -141,7 +155,7 @@ app.get('/clientes/:id', authenticateToken, (req, res) => {
 // Ruta para obtener todos los casos de un usuario
 app.get('/casos', authenticateToken, (req, res) => {
     const query = `
-        SELECT Casos.ID_Caso, Casos.Folio, Casos.Tipo_Caso, Casos.Estado, Casos.Fecha_Creacion, Casos.Resumen_Caso, Clientes.Nombre_Cliente
+        SELECT Casos.ID_Caso,Casos.Nombre, Casos.Folio, Casos.Tipo_Caso, Casos.Estado, Casos.Fecha_Creacion, Casos.Resumen_Caso, Clientes.Nombre_Cliente
         FROM Casos
         JOIN Clientes ON Casos.Cliente_ID = Clientes.ID_Cliente
         WHERE Clientes.Usuario_ID = ?;
@@ -154,9 +168,9 @@ app.get('/casos', authenticateToken, (req, res) => {
 
 // Ruta para añadir un nuevo caso
 app.post('/casos', authenticateToken, (req, res) => {
-    const { Folio, Tipo_Caso, Estado, Fecha_Creacion, Resumen_Caso, Cliente_ID } = req.body;
-    const query = 'INSERT INTO Casos (Folio, Tipo_Caso, Estado, Fecha_Creacion, Resumen_Caso, Cliente_ID) VALUES (?, ?, ?, ?, ?, ?)';
-    db.query(query, [Folio, Tipo_Caso, Estado, Fecha_Creacion, Resumen_Caso, Cliente_ID], (err, result) => {
+    const {Nombre, Folio, Tipo_Caso, Estado, Fecha_Creacion, Resumen_Caso, Cliente_ID } = req.body;
+    const query = 'INSERT INTO Casos (Nombre, Folio, Tipo_Caso, Estado, Fecha_Creacion, Resumen_Caso, Cliente_ID) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    db.query(query, [Nombre, Folio, Tipo_Caso, Estado, Fecha_Creacion, Resumen_Caso, Cliente_ID], (err, result) => {
         if (err) return res.status(500).json({ error: 'Error al añadir caso' });
         res.status(201).json({ message: 'Caso añadido exitosamente', casoId: result.insertId });
     });
@@ -165,7 +179,7 @@ app.post('/casos', authenticateToken, (req, res) => {
 // Ruta para obtener los detalles de un caso específico
 app.get('/casos/:id', authenticateToken, (req, res) => {
     const query = `
-        SELECT Casos.ID_Caso, Casos.Folio, Casos.Tipo_Caso, Casos.Estado, Casos.Fecha_Creacion, Casos.Resumen_Caso, Clientes.Nombre_Cliente
+        SELECT Casos.ID_Caso, Casos.Nombre , Casos.Folio, Casos.Tipo_Caso, Casos.Estado, Casos.Fecha_Creacion, Casos.Resumen_Caso, Clientes.Nombre_Cliente
         FROM Casos
         JOIN Clientes ON Casos.Cliente_ID = Clientes.ID_Cliente
         WHERE Casos.ID_Caso = ? AND Clientes.Usuario_ID = ?;
@@ -178,9 +192,87 @@ app.get('/casos/:id', authenticateToken, (req, res) => {
 });
 
 
+
+
+// Configuración de multer
+const upload = multer({ storage: multer.memoryStorage() }); // Almacena el archivo en memoria
+
+app.post('/api/documentos/upload', upload.single('documento'), (req, res) => {
+  const { Folio_Documento, Tipo_Documento, Estado_Documento, Caso_ID } = req.body;
+
+  if (!req.file) {
+    return res.status(400).json({ error: 'No se envió un archivo.' });
+  }
+
+  const archivo = req.file.buffer; // Contenido del archivo en formato binario
+  const nombreArchivo = req.file.originalname;
+
+  const query = `
+    INSERT INTO Documentos (Folio_Documento, Tipo_Documento, Fecha_Creacion, Estado_Documento, Archivo, Nombre_Archivo, Caso_ID)
+    VALUES (?, ?, NOW(), ?, ?, ?, ?)
+  `;
+  const values = [
+    Folio_Documento,
+    Tipo_Documento,
+    Estado_Documento,
+    archivo,
+    nombreArchivo,
+    Caso_ID,
+  ];
+
+  db.query(query, values, (err, result) => {
+    if (err) {
+      console.error('Error al insertar en la base de datos:', err);
+      return res.status(500).json({ error: 'Error al registrar el documento en la base de datos.' });
+    }
+
+    res.status(201).json({ message: 'Documento subido y registrado exitosamente.' });
+  });
+});
+
+  
+//progreso
+
+app.get('/api/documentos/caso/:casoId', authenticateToken, (req, res) => {
+    const { casoId } = req.params;
+  
+    const query = `
+      SELECT ID_Documento, Folio_Documento, Tipo_Documento, Fecha_Creacion, Estado_Documento
+      FROM Documentos
+      WHERE Caso_ID = ?
+    `;
+    db.query(query, [casoId], (err, results) => {
+      if (err) {
+        console.error('Error al obtener documentos:', err);
+        return res.status(500).json({ error: 'Error al obtener documentos.' });
+      }
+      res.json(results || []);
+    });
+  });
+  app.get('/api/documentos/:id', authenticateToken, (req, res) => {
+    const { id } = req.params;
+  
+    const query = `SELECT Archivo, Nombre_Archivo FROM Documentos WHERE ID_Documento = ?`;
+    db.query(query, [id], (err, results) => {
+      if (err) {
+        console.error('Error al obtener el documento:', err);
+        return res.status(500).json({ error: 'Error al obtener el documento.' });
+      }
+  
+      if (results.length === 0) {
+        return res.status(404).json({ error: 'Documento no encontrado.' });
+      }
+  
+      const documento = results[0];
+      res.setHeader('Content-Disposition', `attachment; filename="${documento.Nombre_Archivo}"`);
+      res.setHeader('Content-Type', 'application/octet-stream');
+      res.send(documento.Archivo);
+    });
+  });
   
   
-  
+//hasta aqui
+
 
 
 // Iniciar el servidor
