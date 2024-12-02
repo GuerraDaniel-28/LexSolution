@@ -43,8 +43,8 @@ CREATE TABLE Documentos (
     Tipo_Documento VARCHAR(45),
     Fecha_Creacion DATE,
     Estado_Documento VARCHAR(45),
-    Archivo LONGBLOB, -- Campo para almacenar el contenido del archivo
-    Nombre_Archivo VARCHAR(255), -- Campo para almacenar el nombre del archivo
+    Archivo LONGBLOB, 
+    Nombre_Archivo VARCHAR(255), 
     Caso_ID INT,
     FOREIGN KEY (Caso_ID) REFERENCES Casos(ID_Caso)
 );

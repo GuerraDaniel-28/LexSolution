@@ -66,6 +66,14 @@ app.post('/register', (req, res) => {
         res.status(201).json({ message: 'Usuario registrado exitosamente', userId: result.insertId });
     });
 });
+
+app.post('/logout', (req, res) => {
+    res.clearCookie('token'); // Nombre de la cookie que contiene el JWT
+    return res.status(200).json({ message: 'Sesión cerrada correctamente' });
+});
+
+
+
 // Ruta para actualizar el perfil de usuario
 app.put('/edit-profile/:userId', (req, res) => {
     const { userId } = req.params;
@@ -151,6 +159,61 @@ app.get('/clientes/:id', authenticateToken, (req, res) => {
         res.json(result[0]);
     });
 });
+// Ruta para actualizar un cliente
+app.put('/clientes/:id', authenticateToken, (req, res) => {
+    const { Nombre_Cliente, Direccion, Telefono, Email, Notas } = req.body;
+    const query = `
+        UPDATE Clientes 
+        SET Nombre_Cliente = ?, Direccion = ?, Telefono = ?, Email = ?, Notas = ?
+        WHERE ID_Cliente = ? AND Usuario_ID = ?`;
+
+    db.query(
+        query,
+        [Nombre_Cliente, Direccion, Telefono, Email, Notas, req.params.id, req.user.id],
+        (err, result) => {
+            if (err) {
+                console.error("Error al actualizar cliente:", err);
+                return res.status(500).json({ error: "Error al actualizar cliente" });
+            }
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: "Cliente no encontrado o no autorizado para actualizar" });
+            }
+            res.json({ message: "Cliente actualizado exitosamente" });
+        }
+    );
+});
+
+
+// Ruta para borrar un cliente
+app.delete('/clientes/:id', authenticateToken, (req, res) => {
+    const clienteId = req.params.id;
+    const userId = req.user.id;
+
+    const deleteCasosQuery = 'DELETE FROM Casos WHERE Cliente_ID = ?';
+    const deleteClienteQuery = 'DELETE FROM Clientes WHERE ID_Cliente = ? AND Usuario_ID = ?';
+
+    // Eliminar los casos relacionados primero
+    db.query(deleteCasosQuery, [clienteId], (err, result) => {
+        if (err) {
+            console.error("Error al eliminar casos relacionados:", err);
+            return res.status(500).json({ error: 'Error al eliminar casos relacionados' });
+        }
+
+        // Luego eliminar el cliente
+        db.query(deleteClienteQuery, [clienteId, userId], (err, result) => {
+            if (err) {
+                console.error("Error al borrar cliente:", err);
+                return res.status(500).json({ error: 'Error al borrar cliente' });
+            }
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: 'Cliente no encontrado o no autorizado para borrar' });
+            }
+            res.json({ message: 'Cliente borrado exitosamente' });
+        });
+    });
+});
+
+
 
 // Ruta para obtener todos los casos de un usuario
 app.get('/casos', authenticateToken, (req, res) => {
@@ -166,7 +229,6 @@ app.get('/casos', authenticateToken, (req, res) => {
     });
 });
 
-// Ruta para añadir un nuevo caso
 app.post('/casos', authenticateToken, (req, res) => {
     const {Nombre, Folio, Tipo_Caso, Estado, Fecha_Creacion, Resumen_Caso, Cliente_ID } = req.body;
     const query = 'INSERT INTO Casos (Nombre, Folio, Tipo_Caso, Estado, Fecha_Creacion, Resumen_Caso, Cliente_ID) VALUES (?, ?, ?, ?, ?, ?, ?)';
@@ -191,12 +253,83 @@ app.get('/casos/:id', authenticateToken, (req, res) => {
     });
 });
 
+app.put('/casos/:id', authenticateToken, (req, res) => {
+    const { Nombre, Folio, Tipo_Caso, Estado, Fecha_Creacion, Resumen_Caso, Cliente_ID } = req.body;
+    const query = `
+        UPDATE Casos 
+        SET Nombre = ?, Folio = ?, Tipo_Caso = ?, Estado = ?, Fecha_Creacion = ?, Resumen_Caso = ?, Cliente_ID = ?
+        WHERE ID_Caso = ? AND EXISTS (
+            SELECT 1 
+            FROM Clientes 
+            WHERE Clientes.ID_Cliente = ? AND Clientes.Usuario_ID = ?
+        );
+    `;
 
+    db.query(query, [Nombre, Folio, Tipo_Caso, Estado, Fecha_Creacion, Resumen_Caso, Cliente_ID, req.params.id, Cliente_ID, req.user.id], (err, result) => {
+        if (err) {
+            console.error("Error al actualizar caso:", err);
+            return res.status(500).json({ error: 'Error al actualizar caso' });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Caso no encontrado o no autorizado para actualizar' });
+        }
+        res.json({ message: 'Caso actualizado exitosamente' });
+    });
+});
 
+app.delete('/casos/:id', authenticateToken, (req, res) => {
+    const query = `
+        DELETE FROM Casos 
+        WHERE ID_Caso = ? AND EXISTS (
+            SELECT 1 
+            FROM Clientes 
+            WHERE Clientes.ID_Cliente = Casos.Cliente_ID AND Clientes.Usuario_ID = ?
+        );
+    `;
 
+    db.query(query, [req.params.id, req.user.id], (err, result) => {
+        if (err) {
+            console.error("Error al borrar caso:", err);
+            return res.status(500).json({ error: 'Error al borrar caso' });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Caso no encontrado o no autorizado para borrar' });
+        }
+        res.json({ message: 'Caso borrado exitosamente' });
+    });
+});
 // Configuración de multer
-const upload = multer({ storage: multer.memoryStorage() }); // Almacena el archivo en memoria
+const upload = multer({ storage: multer.memoryStorage() });
 
+/**
+ * Endpoint: Obtener documentos asociados a un caso
+ */
+app.get("/casos/:id/documentos", (req, res) => {
+  const casoId = req.params.id;
+
+  const query = `
+    SELECT ID_Documento, Folio_Documento, Tipo_Documento, Estado_Documento, Nombre_Archivo, Fecha_Creacion
+    FROM Documentos
+    WHERE Caso_ID = ?
+  `;
+
+  db.query(query, [casoId], (err, results) => {
+    if (err) {
+      console.error("Error al obtener documentos asociados:", err);
+      return res.status(500).json({ error: "Error al obtener documentos asociados." });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: "No se encontraron documentos asociados a este caso." });
+    }
+
+    res.json(results);
+  });
+});
+
+/**
+ * Endpoint: Subir un documento
+ */
 app.post('/api/documentos/upload', upload.single('documento'), (req, res) => {
   const { Folio_Documento, Tipo_Documento, Estado_Documento, Caso_ID } = req.body;
 
@@ -204,21 +337,14 @@ app.post('/api/documentos/upload', upload.single('documento'), (req, res) => {
     return res.status(400).json({ error: 'No se envió un archivo.' });
   }
 
-  const archivo = req.file.buffer; // Contenido del archivo en formato binario
+  const archivo = req.file.buffer; // Contenido del archivo en binario
   const nombreArchivo = req.file.originalname;
 
   const query = `
     INSERT INTO Documentos (Folio_Documento, Tipo_Documento, Fecha_Creacion, Estado_Documento, Archivo, Nombre_Archivo, Caso_ID)
     VALUES (?, ?, NOW(), ?, ?, ?, ?)
   `;
-  const values = [
-    Folio_Documento,
-    Tipo_Documento,
-    Estado_Documento,
-    archivo,
-    nombreArchivo,
-    Caso_ID,
-  ];
+  const values = [Folio_Documento, Tipo_Documento, Estado_Documento, archivo, nombreArchivo, Caso_ID];
 
   db.query(query, values, (err, result) => {
     if (err) {
@@ -230,48 +356,67 @@ app.post('/api/documentos/upload', upload.single('documento'), (req, res) => {
   });
 });
 
-  
-//progreso
-
-app.get('/api/documentos/caso/:casoId', authenticateToken, (req, res) => {
-    const { casoId } = req.params;
+/**
+ * Endpoint: Obtener detalles de un documento específico por ID
+ */
+app.get('/documentos/:folio', (req, res) => {
+    const { folio } = req.params;
   
     const query = `
-      SELECT ID_Documento, Folio_Documento, Tipo_Documento, Fecha_Creacion, Estado_Documento
+      SELECT Tipo_Documento, Archivo, Nombre_Archivo
       FROM Documentos
-      WHERE Caso_ID = ?
+      WHERE Folio_Documento = ?
     `;
-    db.query(query, [casoId], (err, results) => {
-      if (err) {
-        console.error('Error al obtener documentos:', err);
-        return res.status(500).json({ error: 'Error al obtener documentos.' });
-      }
-      res.json(results || []);
-    });
-  });
-  app.get('/api/documentos/:id', authenticateToken, (req, res) => {
-    const { id } = req.params;
   
-    const query = `SELECT Archivo, Nombre_Archivo FROM Documentos WHERE ID_Documento = ?`;
-    db.query(query, [id], (err, results) => {
+    db.query(query, [folio], (err, results) => {
       if (err) {
-        console.error('Error al obtener el documento:', err);
-        return res.status(500).json({ error: 'Error al obtener el documento.' });
+        console.error("Error al obtener detalles del documento:", err);
+        return res.status(500).json({ error: "Error al obtener detalles del documento." });
       }
   
       if (results.length === 0) {
-        return res.status(404).json({ error: 'Documento no encontrado.' });
+        return res.status(404).json({ message: "Documento no encontrado." });
       }
   
-      const documento = results[0];
-      res.setHeader('Content-Disposition', `attachment; filename="${documento.Nombre_Archivo}"`);
-      res.setHeader('Content-Type', 'application/octet-stream');
-      res.send(documento.Archivo);
+      const { Tipo_Documento, Archivo, Nombre_Archivo } = results[0];
+  
+      // Configuración de cabeceras para enviar el archivo
+      res.setHeader('Content-Disposition', `inline; filename="${Nombre_Archivo}"`);
+      res.setHeader('Content-Type', Tipo_Documento);
+      res.end(Archivo, 'binary');
     });
   });
   
-  
-//hasta aqui
+
+/**
+ * Endpoint: Listar documentos por Caso_ID (redundancia eliminada)
+ */
+app.get('/casos/:casoId/documentos', (req, res) => {
+  const { casoId } = req.params;
+
+  const query = `
+    SELECT ID_Documento, Folio_Documento, Tipo_Documento, Fecha_Creacion, Estado_Documento, Nombre_Archivo
+    FROM Documentos
+    WHERE Caso_ID = ?
+  `;
+
+  db.query(query, [casoId], (err, results) => {
+    if (err) {
+      console.error("Error al recuperar los documentos:", err);
+      return res.status(500).json({ message: "Error al recuperar los documentos." });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: "No se encontraron documentos para este caso." });
+    }
+
+    res.json(results);
+  });
+});
+
+
+
+
 
 
 

@@ -1,7 +1,6 @@
 // En tu componente Dashboard.jsx
 import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Bienvenida } from './Bienvenida.jsx';
 
 
 export const Dashboard = (onLogout ) => {

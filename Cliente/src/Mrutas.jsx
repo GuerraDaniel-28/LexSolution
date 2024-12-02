@@ -16,6 +16,11 @@ import { AñadirCaso } from './components/Casos/AñadirCaso.jsx';
 import { DetallesCaso } from './components/Casos/DetallesCaso.jsx';
 import {EditarPerfil} from './components/editarperfil.jsx';
 import { Bienvenida } from './components/Bienvenida.jsx';
+import { ActualizarCliente } from './components/Clientes/ActualizarCliente.jsx';
+import { EditarCaso } from './components/Casos/EditarCaso.jsx';
+import  {SubirDoc} from './components/Documentos/SubirDoc.jsx';
+import { DocumentosAsociados } from './components/Documentos/DocumentosAsociados.jsx';
+import { DetallesDocumento } from './components/Documentos/DetallesDocumento.jsx';
 export const Mrutas = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));
 
@@ -36,16 +41,12 @@ export const Mrutas = () => {
       {/* Ruta principal */}
       <Route path="/" element={
         <>
-          <Barrain />
           <Bajoin />
-          <Masbajoin />
-          <Finin />
         </>
       } />
 
       <Route path="/login" element={
         <>
-          <Barrain />
           <Login setIsAuthenticated={setIsAuthenticated} />
         </>
       } />
@@ -53,18 +54,15 @@ export const Mrutas = () => {
       {/* Ruta de registro */}
       <Route path="/registro" element={
         <>
-          <Barrain />
           <Registro />
         </>
       } />
 
 <Route 
-  path="/dashboard" 
-  element={
+  path="/dashboard" element={
     isAuthenticated ? (
       <>
-        <Dashboard onLogout={handleLogout} />
-        <Bienvenida />
+        <Bienvenida onLogout={handleLogout}/>
       </>
     ) : (
       <Navigate to="/login" />
@@ -75,68 +73,155 @@ export const Mrutas = () => {
 
 
             <Route path="/perfil" element={
+                  isAuthenticated ? (
+
               <>
-              <Dashboard onLogout={handleLogout} />
-              <Perfil />
+              <Perfil onLogout={handleLogout} />
               </>
-              } />
-            <Route path="/clientes" element={
-              <>
-              <Dashboard onLogout={handleLogout} />
-              <TodosClientes />
-              </>
-              
-              } />
-            <Route path="/clientes/:id" element={
-              <>
-              <Dashboard onLogout={handleLogout} />
-              <DetallesCliente />
-              </>
-              
-              }/>
-            <Route path="/agclientes" element={
-              <>
-              <Dashboard onLogout={handleLogout} />
-              <AgregarCliente />
-              </>
-              
-              } />
-            <Route path="/detclientes" element={
-              <>
-              <Dashboard onLogout={handleLogout} />
-              <DetallesCliente />
-              </>
-              
-              } />
-            <Route path="/casos" element={
-              <>
-              <Dashboard onLogout={handleLogout} />
-              <ListaCasos />
-              </>
-              
-              } />
-            <Route path="/casos/nuevo" element={
-              <>
-              <Dashboard onLogout={handleLogout} />
-              <AñadirCaso />
-              </>
-              
-              } />
-            <Route path="/casos/:id" element={
-              <>
-              <Dashboard onLogout={handleLogout} />
-              <DetallesCaso />
-              </>
+              ) : (
+      <Navigate to="/login" />
+    )
               } />
 
-            <Route path="/editarp" element={
+
+            <Route path="/clientes" element={
+              isAuthenticated ? (
               <>
-              <Dashboard onLogout={handleLogout} />
-              <EditarPerfil />
+              <TodosClientes onLogout={handleLogout}/>
               </>
+              ) : (
+                <Navigate to="/login" />
+              )
+              } />
+
+            <Route path="/clientes/:id" element={
+              isAuthenticated ? (
+
+              <>
+              <DetallesCliente onLogout={handleLogout}/>
+              </>
+              ) : (
+                <Navigate to="/login" />
+              )
+              }/>
+
+            <Route path="/agclientes" element={
+              isAuthenticated ? (
+
+              <>
+              <AgregarCliente onLogout={handleLogout}/>
+              </>
+              ) : (
+      <Navigate to="/login" />
+    )
+              } />
+            <Route path="/detclientes" element={
+              isAuthenticated ? (
+
+              <>
+              <DetallesCliente onLogout={handleLogout}/>
+              </>
+              ) : (
+                <Navigate to="/login" />
+              )
+              } />
+
+              <Route path="/clientes/:id/editar" element={
+              isAuthenticated ? (
+              <>
+              <ActualizarCliente onLogout={handleLogout}/>
+              </>
+              ) : (<Navigate to="/login" />)
+              } />
+
+            <Route path="/casos" element={
+              isAuthenticated ? (
+
+              <>
+              <ListaCasos onLogout={handleLogout}/>
+              </>
+              ) : (
+                <Navigate to="/login" />
+              )
+              } />
+            <Route path="/casos/nuevo" element={
+              isAuthenticated ? (
+
+              <>
+              <AñadirCaso onLogout={handleLogout}/>
+              </>
+              ) : (
+                <Navigate to="/login" />
+              )
+              } />
+            <Route path="/casos/:id" element={
+              isAuthenticated ? (
+
+              <>
+              <DetallesCaso onLogout={handleLogout}/>
+              </>
+              ) : (
+                <Navigate to="/login" />
+              )
+              } />
+
+
+              <Route path="/casos/:id/editar" element={
+                isAuthenticated ? (
+  
+                <>
+                <EditarCaso onLogout={handleLogout}/>
+                </>
+                ) : (
+                  <Navigate to="/login" />
+                )
+                } />
+
+
+            <Route path="/editarp" element={
+              isAuthenticated ? (
+
+              <>
+              <EditarPerfil onLogout={handleLogout}/>
+              </>
+              ) : (
+                <Navigate to="/login" />
+              )
               } />
           
-            
+            <Route path="/casos/:id/documentos" element={
+              isAuthenticated ? (
+
+              <>
+              <DocumentosAsociados onLogout={handleLogout}/>
+              </>
+              ) : (
+                <Navigate to="/login" />
+              )
+              } />
+              
+              <Route path="/casos/:id/documentos/subir" element={
+                isAuthenticated ? (
+
+                  <>
+                  <SubirDoc onLogout={handleLogout}/>
+                  </>
+                  ) : (
+                    <Navigate to="/login" />
+                  )
+                  } />
+
+              <Route path="/casos/:id/documentos/:documentoId" element={
+                isAuthenticated ? (
+
+                  <>
+                  <DetallesDocumento onLogout={handleLogout}/>
+                  </>
+                  ) : (
+                    <Navigate to="/login" />
+                  )
+                  } />
+
 
     </Routes>
   );
