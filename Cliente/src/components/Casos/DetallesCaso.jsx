@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { SubirDoc } from "../Documentos/SubirDoc";
-import { VerDoc } from "../Documentos/VerDoc";
 
 export const DetallesCaso = () => {
   const { id } = useParams();

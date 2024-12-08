@@ -100,6 +100,28 @@ app.put('/edit-profile/:userId', (req, res) => {
     });
 });
 
+app.get('/usuario', authenticateToken, (req, res) => {
+    const userId = req.user.id;
+
+    const query = `
+        SELECT ID_Usuario, Nombre_Usuario, Correo, Contacto
+        FROM Usuarios
+        WHERE ID_Usuario = ?
+    `;
+
+    db.query(query, [userId], (err, results) => {
+        if (err) {
+            console.error('Error al obtener los datos del usuario:', err);
+            return res.status(500).json({ error: 'Error al obtener los datos del usuario' });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        res.json(results[0]); // Devuelve los datos del usuario
+    });
+});
 
 // Ruta de inicio de sesión
 app.post('/login', (req, res) => {
@@ -413,11 +435,6 @@ app.get('/casos/:casoId/documentos', (req, res) => {
     res.json(results);
   });
 });
-
-
-
-
-
 
 
 // Iniciar el servidor
